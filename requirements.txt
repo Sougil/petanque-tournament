@@ -1,0 +1,6 @@
+/mon-projet
+    |-- app.py                    # Ton fichier Flask
+    |-- petanque_tournament_generator.py  # Script Python pour le tournoi
+    |-- requirements.txt          # Liste des dépendances Python
+    |-- docs/                     # Contient ton fichier HTML
+        |-- index.html            # Page HTML pour le formulaire
