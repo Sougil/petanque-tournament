@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Générateur de Tournoi de Pétanque</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        label {
+            display: block;
+            margin-top: 10px;
+        }
+        input, select {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            margin-top: 20px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <h1>Générateur de Tournoi de Pétanque</h1>
+    <form id="tournamentForm">
+        <label for="teamType">Type de concours :</label>
+        <select id="teamType" name="teamType" required>
+            <option value="doublette">Doublette</option>
+            <option value="triplette">Triplette</option>
+        </select>
+
+        <label for="numPlayers">Nombre de joueurs :</label>
+        <input type="number" id="numPlayers" name="numPlayers" min="4" step="2" required 
+               placeholder="Doit être un multiple de 4 pour doublette, de 6 pour triplette">
+
+        <label for="numMatches">Nombre de parties :</label>
+        <input type="number" id="numMatches" name="numMatches" min="1" required 
+               placeholder="Nombre de parties à jouer">
+
+        <button type="submit">Générer le tournoi</button>
+    </form>
+
+    <script>
+        document.getElementById('tournamentForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            // Récupérer les valeurs du formulaire
+            const teamType = document.getElementById('teamType').value;
+            const numPlayers = parseInt(document.getElementById('numPlayers').value);
+            const numMatches = parseInt(document.getElementById('numMatches').value);
+
+            // Validation
+            const teamSize = teamType === 'doublette' ? 2 : 3;
+            if (numPlayers % (teamSize * 2) !== 0) {
+                alert(`Le nombre de joueurs doit être un multiple de ${teamSize * 2}`);
+                return;
+            }
+
+            // Envoie les données au serveur Flask
+            fetch('https://petanque-tournament.onrender.com', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    team_type: teamType,
+                    num_players: numPlayers,
+                    num_matches: numMatches
+                })
+            })
+            .then(response => {
+                if (!response.ok) throw new Error('Erreur lors de la génération du tournoi.');
+                return response.blob();
+            })
+            .then(blob => {
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = url;
+                a.download = `Tournoi_Petanque_${teamType.charAt(0).toUpperCase() + teamType.slice(1)}.xlsx`;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+            })
+            .catch(error => {
+                console.error('Erreur :', error);
+                alert('Une erreur est survenue lors de la génération du tournoi.');
+            });
+        });
+    </script>
+</body>
+</html>
