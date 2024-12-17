@@ -1,5 +1,5 @@
 from flask import Flask, request, jsonify, send_file
-from petanque_tournament_generator import PetanqueTournament
+from tournament_generator import PetanqueTournament
 from io import BytesIO  # Import de BytesIO pour l'écriture en mémoire
 
 app = Flask(__name__)
