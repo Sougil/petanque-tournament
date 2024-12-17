@@ -6,8 +6,8 @@ import os
 
 app = Flask(__name__)
 
-# Active CORS pour TOUTES les origines (temporairement pour tester)
-CORS(app)
+# Activer CORS pour autoriser uniquement les requêtes venant de ton site GitHub Pages
+CORS(app, resources={r"/*": {"origins": "https://sougil.github.io"}})
 
 @app.route('/generate_tournament', methods=['POST'])
 def generate_tournament():
