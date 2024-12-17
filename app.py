@@ -1,3 +1,4 @@
+import os
 from flask import Flask, request, jsonify, send_file
 from tournament_generator import PetanqueTournament
 from io import BytesIO
@@ -18,7 +19,7 @@ def generate_tournament():
 
         # Crée le fichier Excel en mémoire avec BytesIO
         excel_buffer = BytesIO()
-        wb = tournament.create_workbook()  # Crée un Workbook directement
+        wb = tournament.create_workbook()  # Méthode qui renvoie un Workbook
         wb.save(excel_buffer)  # Enregistre le fichier dans le buffer mémoire
         excel_buffer.seek(0)  # Replace le curseur au début du fichier en mémoire
 
@@ -29,5 +30,8 @@ def generate_tournament():
     except Exception as e:
         return jsonify({'error': str(e)}), 400
 
+
 if __name__ == '__main__':
-    app.run(debug=True)
+    # Récupère le port fourni par Render, sinon utilise 5000 par défaut
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host='0.0.0.0', port=port)
