@@ -1,9 +1,13 @@
 import os
 from flask import Flask, request, jsonify, send_file
+from flask_cors import CORS  # Import Flask-CORS
 from tournament_generator import PetanqueTournament
 from io import BytesIO
 
 app = Flask(__name__)
+
+# Activer CORS et autoriser uniquement ton domaine GitHub Pages
+CORS(app, resources={r"/*": {"origins": "https://sougil.github.io"}})
 
 @app.route('/generate_tournament', methods=['POST'])
 def generate_tournament():
@@ -19,19 +23,18 @@ def generate_tournament():
 
         # Crée le fichier Excel en mémoire avec BytesIO
         excel_buffer = BytesIO()
-        wb = tournament.create_workbook()  # Méthode qui renvoie un Workbook
-        wb.save(excel_buffer)  # Enregistre le fichier dans le buffer mémoire
-        excel_buffer.seek(0)  # Replace le curseur au début du fichier en mémoire
+        wb = tournament.create_workbook()
+        wb.save(excel_buffer)
+        excel_buffer.seek(0)
 
         # Renvoie le fichier Excel directement au client
         filename = f"Tournoi_Petanque_{team_type.capitalize()}.xlsx"
         return send_file(excel_buffer, download_name=filename, as_attachment=True)
-
+    
     except Exception as e:
         return jsonify({'error': str(e)}), 400
 
 
 if __name__ == '__main__':
-    # Récupère le port fourni par Render, sinon utilise 5000 par défaut
-    port = int(os.environ.get("PORT", 5000))
+    port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port)
