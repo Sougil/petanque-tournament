@@ -15,16 +15,17 @@ def generate_tournament():
         # Initialise et génère le tournoi
         tournament = PetanqueTournament(team_type, num_players, num_matches)
         tournament.generate_matches()
-        
-        # Crée le fichier Excel en mémoire
+
+        # Crée le fichier Excel en mémoire avec BytesIO
         excel_buffer = BytesIO()
-        wb = tournament.create_workbook()  # Assure-toi que create_excel_file renvoie un Workbook
-        wb.save(excel_buffer)
-        excel_buffer.seek(0)
-        
-        # Renvoyer le fichier Excel sans le sauvegarder sur le serveur
+        wb = tournament.create_workbook()  # Crée un Workbook directement
+        wb.save(excel_buffer)  # Enregistre le fichier dans le buffer mémoire
+        excel_buffer.seek(0)  # Replace le curseur au début du fichier en mémoire
+
+        # Renvoie le fichier Excel directement au client
         filename = f"Tournoi_Petanque_{team_type.capitalize()}.xlsx"
         return send_file(excel_buffer, download_name=filename, as_attachment=True)
+
     except Exception as e:
         return jsonify({'error': str(e)}), 400
 
