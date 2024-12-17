@@ -1,11 +1,8 @@
 from flask import Flask, request, jsonify, send_file
 from petanque_tournament_generator import PetanqueTournament
-
-from flask_cors import CORS
+from io import BytesIO
 
 app = Flask(__name__)
-CORS(app)  # Autorise toutes les origines
-
 
 @app.route('/generate_tournament', methods=['POST'])
 def generate_tournament():
@@ -15,13 +12,19 @@ def generate_tournament():
     num_matches = data.get('num_matches')
 
     try:
-        # Crée le tournoi
+        # Initialise et génère le tournoi
         tournament = PetanqueTournament(team_type, num_players, num_matches)
         tournament.generate_matches()
         
-        # Crée et envoie le fichier Excel
-        filename = tournament.create_excel_file()
-        return send_file(filename, as_attachment=True)
+        # Crée le fichier Excel en mémoire
+        excel_buffer = BytesIO()
+        wb = tournament.create_workbook()  # Assure-toi que create_excel_file renvoie un Workbook
+        wb.save(excel_buffer)
+        excel_buffer.seek(0)
+        
+        # Renvoyer le fichier Excel sans le sauvegarder sur le serveur
+        filename = f"Tournoi_Petanque_{team_type.capitalize()}.xlsx"
+        return send_file(excel_buffer, download_name=filename, as_attachment=True)
     except Exception as e:
         return jsonify({'error': str(e)}), 400
 
