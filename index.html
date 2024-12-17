@@ -55,51 +55,51 @@
     </form>
 
     <script>
-document.getElementById('tournamentForm').addEventListener('submit', function(e) {
-    e.preventDefault();
+        document.getElementById('tournamentForm').addEventListener('submit', function(e) {
+            e.preventDefault();
 
-    // Récupère les valeurs du formulaire
-    const teamType = document.getElementById('teamType').value;
-    const numPlayers = parseInt(document.getElementById('numPlayers').value);
-    const numMatches = parseInt(document.getElementById('numMatches').value);
+            // Récupérer les valeurs du formulaire
+            const teamType = document.getElementById('teamType').value;
+            const numPlayers = parseInt(document.getElementById('numPlayers').value);
+            const numMatches = parseInt(document.getElementById('numMatches').value);
 
-    // Validation
-    const teamSize = teamType === 'doublette' ? 2 : 3;
-    if (numPlayers % (teamSize * 2) !== 0) {
-        alert(`Le nombre de joueurs doit être un multiple de ${teamSize * 2}`);
-        return;
-    }
+            // Validation
+            const teamSize = teamType === 'doublette' ? 2 : 3;
+            if (numPlayers % (teamSize * 2) !== 0) {
+                alert(`Le nombre de joueurs doit être un multiple de ${teamSize * 2}`);
+                return;
+            }
 
-    // Envoi de la requête au serveur Flask
-    fetch('https://petanque-tournament.onrender.com/generate_tournament', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            team_type: teamType,
-            num_players: numPlayers,
-            num_matches: numMatches
-        })
-    })
-    .then(response => {
-        if (!response.ok) throw new Error('Erreur serveur.');
-        return response.blob();
-    })
-    .then(blob => {
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.style.display = 'none';
-        a.href = url;
-        a.download = `Tournoi_Petanque_${teamType.charAt(0).toUpperCase() + teamType.slice(1)}.xlsx`;
-        document.body.appendChild(a);
-        a.click();
-        window.URL.revokeObjectURL(url);
-    })
-    .catch(error => {
-        console.error('Erreur :', error);
-        alert('Une erreur est survenue.');
-    });
-});
-
+            // Envoi de la requête au serveur Flask
+            fetch('https://petanque-tournament.onrender.com/generate_tournament', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    team_type: teamType,
+                    num_players: numPlayers,
+                    num_matches: numMatches
+                })
+            })
+            .then(response => {
+                if (!response.ok) throw new Error('Erreur serveur.');
+                return response.blob(); // Récupère le fichier en réponse
+            })
+            .then(blob => {
+                // Crée un lien pour télécharger le fichier
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = url;
+                a.download = `Tournoi_Petanque_${teamType.charAt(0).toUpperCase() + teamType.slice(1)}.xlsx`;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+            })
+            .catch(error => {
+                console.error('Erreur :', error);
+                alert('Une erreur est survenue.');
+            });
+        });
     </script>
 </body>
 </html>
