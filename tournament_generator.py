@@ -1,33 +1,49 @@
-from flask import Flask, request, jsonify, send_file
-from tournament_generator import PetanqueTournament
-from io import BytesIO  # Import de BytesIO pour l'écriture en mémoire
+import random
+from openpyxl import Workbook
 
-app = Flask(__name__)
+class PetanqueTournament:
+    def __init__(self, team_type, num_players, num_matches):
+        """
+        Initialise le tournoi de pétanque.
+        :param team_type: 'doublette' ou 'triplette'
+        :param num_players: nombre total de joueurs
+        :param num_matches: nombre de parties à jouer
+        """
+        self.team_type = team_type
+        self.num_players = num_players
+        self.num_matches = num_matches
+        self.team_size = 2 if team_type == 'doublette' else 3
 
-@app.route('/generate_tournament', methods=['POST'])
-def generate_tournament():
-    data = request.get_json()
-    team_type = data.get('team_type')
-    num_players = data.get('num_players')
-    num_matches = data.get('num_matches')
+        if num_players % (self.team_size * 2) != 0:
+            raise ValueError(f"Le nombre de joueurs doit être un multiple de {self.team_size * 2}")
 
-    try:
-        # Initialise et génère le tournoi
-        tournament = PetanqueTournament(team_type, num_players, num_matches)
-        tournament.generate_matches()
+        # Liste des joueurs
+        self.players = list(range(1, num_players + 1))
+        self.matches = []
 
-        # Crée le fichier Excel en mémoire avec BytesIO
-        excel_buffer = BytesIO()
-        wb = tournament.create_workbook()  # Méthode qui renvoie un objet Workbook
-        wb.save(excel_buffer)  # Enregistre le fichier dans le buffer mémoire
-        excel_buffer.seek(0)  # Replace le curseur au début du fichier en mémoire
+    def generate_matches(self):
+        """Génère des équipes aléatoirement pour chaque partie."""
+        for _ in range(self.num_matches):
+            random.shuffle(self.players)
+            match_teams = [
+                self.players[:self.team_size],
+                self.players[self.team_size: self.team_size * 2]
+            ]
+            self.matches.append(match_teams)
 
-        # Renvoie le fichier Excel directement au client
-        filename = f"Tournoi_Petanque_{team_type.capitalize()}.xlsx"
-        return send_file(excel_buffer, download_name=filename, as_attachment=True)
-    
-    except Exception as e:
-        return jsonify({'error': str(e)}), 400
+    def create_workbook(self):
+        """Crée un fichier Excel en mémoire avec les équipes générées."""
+        wb = Workbook()
+        ws = wb.active
+        ws.title = "Tournoi"
 
-if __name__ == '__main__':
-    app.run(debug=True)
+        # En-têtes
+        ws.append(["Partie", "Equipe 1", "Equipe 2"])
+
+        # Remplissage des matchs
+        for idx, match in enumerate(self.matches, start=1):
+            team1 = ", ".join(map(str, match[0]))
+            team2 = ", ".join(map(str, match[1]))
+            ws.append([f"Partie {idx}", team1, team2])
+
+        return wb
