@@ -34,4 +34,4 @@ def generate_tournament():
 if __name__ == '__main__':
     # Récupère le port fourni par Render, sinon utilise 5000 par défaut
     port = int(os.environ.get("PORT", 5000))
-    app.run(host='10.214.219.40', port=10000)
+    app.run(host='0.0.0.0', port=port)
